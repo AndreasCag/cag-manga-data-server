@@ -15,7 +15,7 @@ const logger = winston.createLogger({
 });
 
 type LoggerPayload = {
-  category: String;
+  category: String | String[];
   message: String;
   data?: Object;
 };

@@ -3,6 +3,7 @@ import ValidationErrorBody from '@/api/helpers/errorBodies/ValidationErrorBody';
 import { sequelize } from '@/db';
 import Genre from '@/db/models/Genre';
 import supertest from 'supertest';
+import generateValidationErrorBody from 'tests/helpers/generateValidationErrorBody';
 import { down, seedData, up } from './genres.seed';
 
 beforeAll(async () => {
@@ -13,13 +14,22 @@ type GenreListResponseBody = {
   genres: Genre[];
 };
 
+type GenreResponseBody = {
+  genre: Genre;
+};
+
 const testGenre = {
   name: 'New test genre',
   description: 'New test genre description',
 };
 
-describe('genres route', () => {
-  describe('list subroute', () => {
+const updatedTestGenre = {
+  name: 'New test genre2',
+  description: 'New test genre description2',
+};
+
+describe('/genres route', () => {
+  describe('/list subroute', () => {
     it('returns list of genres', async () => {
       const response = await supertest(app)
         .get('/genres/list');
@@ -34,7 +44,7 @@ describe('genres route', () => {
     });
   });
 
-  describe('create subroute', () => {
+  describe('/create subroute', () => {
     it('creates new genre', async () => {
       const response = await supertest(app)
         .post('/genres/create')
@@ -84,13 +94,130 @@ describe('genres route', () => {
 
       expect(body)
         .toEqual(
+          generateValidationErrorBody('name', 'description'),
+        );
+    });
+  });
+
+  describe('/:id subroute', () => {
+    it('returns selected genre', async () => {
+      const response = await supertest(app)
+        .get('/genres/4');
+
+      const body = <GenreResponseBody>response.body;
+
+      expect(response.status)
+        .toBe(200);
+
+      expect(body.genre)
+        .toMatchObject(testGenre);
+    });
+
+    it('returns error if genre doesn\'t exist', async () => {
+      const id = 100;
+
+      const response = await supertest(app)
+        .get(`/genres/${id}`);
+
+      const body = response.body;
+
+      expect(response.status)
+        .toBe(404);
+
+      expect(body)
+        .toEqual(
           expect.objectContaining({
-            code: 3,
+            code: 4,
             data: {
-              errors: expect.arrayContaining([
-                expect.objectContaining({ param: 'name' }),
-                expect.objectContaining({ param: 'description' }),
-              ]),
+              id: id.toString(),
+            },
+          }),
+        );
+    });
+  });
+
+  describe('/:id/edit subroute', () => {
+    it('edits selected genre', async () => {
+      const response = await supertest(app)
+        .put('/genres/4/edit')
+        .send(updatedTestGenre);
+
+      const body = <GenreResponseBody>response.body;
+
+      expect(response.status)
+        .toBe(200);
+
+      expect(body.genre)
+        .toMatchObject(updatedTestGenre);
+    });
+
+    it('returns error if genre doesn\'t exist', async () => {
+      const id = 100;
+
+      const response = await supertest(app)
+        .put(`/genres/${id}/edit`)
+        .send(testGenre);
+
+      const body = response.body;
+
+      expect(response.status)
+        .toBe(404);
+
+      expect(body)
+        .toEqual(
+          expect.objectContaining({
+            code: 4,
+            data: {
+              id: id.toString(),
+            },
+          }),
+        );
+    });
+
+    it('returns error if genre has validation errors', async () => {
+      const response = await supertest(app)
+        .put(`/genres/4/edit`)
+        .send({
+          name: seedData[0].name,
+          description: '',
+        });
+
+      const body = response.body;
+
+      expect(response.status)
+        .toBe(422);
+
+      expect(body)
+        .toEqual(
+          generateValidationErrorBody('name', 'description'),
+        );
+    });
+  });
+
+  describe('/:id/delete subroute', () => {
+    it('delets selected genre', async () => {
+      const response = await supertest(app)
+        .delete('/genres/4/delete');
+
+      expect(response.status)
+        .toBe(200);
+    });
+
+    it('returns error if genre doesn\'t exist', async () => {
+      const id = 4;
+
+      const response = await supertest(app)
+        .delete(`/genres/${id}/delete`);
+
+      expect(response.status)
+        .toBe(404);
+
+        expect(response.body)
+        .toEqual(
+          expect.objectContaining({
+            code: 4,
+            data: {
+              id: id.toString(),
             },
           }),
         );
