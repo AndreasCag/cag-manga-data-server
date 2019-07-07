@@ -1,0 +1,14 @@
+{
+  "development": {
+    "url": "postgres://postgres:kapec97lcC@localhost:5432/cag-manga",
+    "dialect": "postgres"
+  },
+  "test": {
+    "url": "postgres://postgres:kapec97lcC@localhost:5432/cag-manga-test",
+    "dialect": "postgres"
+  },
+  "production": {
+    "url": "postgres://postgres:kapec97lcC@localhost:5432/cag-manga",
+    "dialect": "postgres"
+  }
+}

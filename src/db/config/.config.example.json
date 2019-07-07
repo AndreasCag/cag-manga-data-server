@@ -1,0 +1,14 @@
+{
+  "development": {
+    "url": "postgres://login:pass@host/db-name",
+    "dialect": "postgres"
+  },
+  "test": {
+    "url": "postgres://login:pass@host/db-name",
+    "dialect": "postgres"
+  },
+  "production": {
+    "url": "postgres://login:pass@host/db-name",
+    "dialect": "postgres"
+  }
+}
