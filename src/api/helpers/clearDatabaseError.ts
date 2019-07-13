@@ -1,4 +1,4 @@
-import { DatabaseError, ValidationError } from 'sequelize/types';
+import { BaseError, DatabaseError, ValidationError } from 'sequelize/types';
 
 // tslint:disable-next-line:no-any
 const isValidationError = (err: any): err is ValidationError => {
@@ -10,7 +10,7 @@ const isValidationError = (err: any): err is ValidationError => {
   return err.hasOwnProperty('errors');
 };
 
-export default (error: DatabaseError) => {
+export default (error: BaseError) => {
   if (isValidationError(error)) {
     for (const validationError of error.errors) {
       // tslint:disable-next-line:no-any

@@ -5,15 +5,22 @@ import { validationResult } from 'express-validator';
 import handleErrorInDbRequest from '../../helpers/errorHandlers/handleErrorInDbRequest';
 import handleRecordNotFoundError from '../../helpers/errorHandlers/handleRecordNotFoundError';
 import handleValidationError from '../../helpers/errorHandlers/handleValidationError';
-import { descriptionBodyValidator, idParamValidator, newNameBodyValidator, updateNameBodyValidator } from './validators';
+import {
+  descriptionBodyValidator,
+  idParamValidator,
+  imageBodyValidator,
+  newNameBodyValidator,
+  updateNameBodyValidator,
+} from './validators';
 
 export type GenreParams = {
   id: string;
 };
 
 type GenreBody = {
-  name: String;
-  description: String;
+  name: string;
+  description: string;
+  image: string;
 };
 
 const router = Router();
@@ -49,6 +56,7 @@ router.post(
   [
     newNameBodyValidator,
     descriptionBodyValidator,
+    imageBodyValidator,
   ],
   async (req: Request, res: Response) => {
     logger.debug({
@@ -78,6 +86,7 @@ router.post(
     const newGenre = new Genre({
       name: body.name,
       description: body.description,
+      image: body.image,
     });
 
     try {
@@ -171,6 +180,7 @@ router.put(
     idParamValidator,
     updateNameBodyValidator,
     descriptionBodyValidator,
+    imageBodyValidator,
   ],
   async (req: Request, res: Response) => {
     const params = (<GenreParams>req.params);
@@ -227,6 +237,7 @@ router.put(
       updatedGenre = await genre.update({
         name: body.name,
         description: body.description,
+        image: body.image,
       });
     } catch (err) {
       handleErrorInDbRequest(res, err, 'Cannot update genre in db');

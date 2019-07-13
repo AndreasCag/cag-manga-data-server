@@ -21,11 +21,13 @@ type GenreResponseBody = {
 const testGenre = {
   name: 'New test genre',
   description: 'New test genre description',
+  image: 'image_4',
 };
 
 const updatedTestGenre = {
   name: 'New test genre2',
   description: 'New test genre description2',
+  image: 'image_5',
 };
 
 describe('/genres route', () => {
@@ -82,7 +84,7 @@ describe('/genres route', () => {
         });
     });
 
-    it('Send error if name or description don\'t setted', async () => {
+    it('Sends error if name or description doesn\'t set', async () => {
       const response = await supertest(app)
         .post('/genres/create')
         .send({ name: '', genre: '' });
@@ -195,7 +197,7 @@ describe('/genres route', () => {
   });
 
   describe('/:id/delete subroute', () => {
-    it('delets selected genre', async () => {
+    it('deletes selected genre', async () => {
       const response = await supertest(app)
         .delete('/genres/4/delete');
 

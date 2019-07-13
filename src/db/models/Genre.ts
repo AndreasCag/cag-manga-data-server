@@ -30,6 +30,10 @@ export const initGenre = (sequelize: Sequelize) => {
       type: new DataTypes.STRING(maxDescriptionLength),
       allowNull: false,
     },
+    image: {
+      type: new DataTypes.STRING(),
+      allowNull: false,
+    },
   }, {
     sequelize,
   });

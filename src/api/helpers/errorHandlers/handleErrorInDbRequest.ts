@@ -20,9 +20,7 @@ const isDatabaseError = (err: any): err is DatabaseError => {
 
 // tslint:disable-next-line:no-any
 export default (res: Response, err: any, message: string) => {
-  if (isDatabaseError(err)) {
-    clearDatabaseError(err);
-  }
+  clearDatabaseError(err);
 
   logger.warn({
     category: 'router',
