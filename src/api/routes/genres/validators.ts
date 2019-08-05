@@ -82,7 +82,7 @@ export const updateNameBodyValidator = body('name')
   })
   .withMessage(`Should be unique`);
 
-  export const descriptionBodyValidator = body('description')
+export const descriptionBodyValidator = body('description')
   .isString()
   .withMessage(`Should be string`)
   .not()
@@ -92,11 +92,11 @@ export const updateNameBodyValidator = body('name')
   .withMessage(`Should have length <= ${maxDescriptionLength}`);
 
 export const imageBodyValidator = body('image')
-.isString()
-.withMessage(`Should be string`)
-.not()
-.isEmpty()
-.withMessage('Shouldn\'t be empty');
+  .isString()
+  .withMessage(`Should be string`)
+  .not()
+  .isEmpty()
+  .withMessage('Shouldn\'t be empty');
 
 export const idParamValidator = param('id')
   .not()

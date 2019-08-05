@@ -9,15 +9,3 @@ export const initialiseDb = async () => {
 
   initializeModels(sequelize);
 };
-
-export const initialize = () => {
-  initializeModels(sequelize);
-};
-
-export const fakeInitialize = () => {
-  const sequelize = new Sequelize({
-    dialect: 'postgres',
-  });
-
-  initializeModels(sequelize);
-};

@@ -18,7 +18,9 @@
     "no-submodule-imports": [false],
     "no-backbone-get-set-outside-model": [false],
     "no-increment-decrement": [false],
-    "strict-boolean-expressions": [false]
+    "strict-boolean-expressions": [false],
+    "no-non-null-assertion": [false],
+    "no-suspicious-comment": [false]
   },
   "rulesDirectory": []
 }

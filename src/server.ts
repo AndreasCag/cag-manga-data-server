@@ -27,6 +27,11 @@ const startServer = async () => {
     logger.error({
       category: 'core',
       message: 'Cannot connect to db',
+      data: {
+        error: err,
+        errorString: (<Error>err).toString(),
+        stack: (<Error>err).stack,
+      },
     });
 
     throw new InitialiseAppError();

@@ -51,6 +51,7 @@ router.get('/list', async (req, res) => {
   });
 });
 
+// @TODO: create object with nested objects
 router.post(
   '/create',
   [
@@ -70,11 +71,11 @@ router.post(
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      const validaionErrors = errors.array();
+      const validationErrors = errors.array();
 
       handleValidationError(
         res,
-        validaionErrors,
+        validationErrors,
         'Create genre request failed validation',
       );
 
@@ -130,11 +131,11 @@ router.get(
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      const validaionErrors = errors.array();
+      const validationErrors = errors.array();
 
       handleValidationError(
         res,
-        validaionErrors,
+        validationErrors,
         'Get genre request failed validation',
       );
 
@@ -197,11 +198,11 @@ router.put(
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      const validaionErrors = errors.array();
+      const validationErrors = errors.array();
 
       handleValidationError(
         res,
-        validaionErrors,
+        validationErrors,
         'Edit genre request failed validation',
       );
 
@@ -278,11 +279,11 @@ router.delete(
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      const validaionErrors = errors.array();
+      const validationErrors = errors.array();
 
       handleValidationError(
         res,
-        validaionErrors,
+        validationErrors,
         'Delete genre request failed validation',
       );
 

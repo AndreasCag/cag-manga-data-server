@@ -1,4 +1,6 @@
 import { DataTypes, Model, Sequelize } from 'sequelize';
+import Manga from './Manga';
+import MangaGenre from './MangaGenre';
 
 export const maxNameLength = 128;
 export const maxDescriptionLength = 700;
@@ -36,5 +38,14 @@ export const initGenre = (sequelize: Sequelize) => {
     },
   }, {
     sequelize,
+    tableName: 'Genres',
+  });
+};
+
+export const initGenreAssociations = () => {
+  Genre.belongsToMany(Manga, {
+    through: MangaGenre,
+    as: 'mangas',
+    foreignKey: 'mangaId',
   });
 };

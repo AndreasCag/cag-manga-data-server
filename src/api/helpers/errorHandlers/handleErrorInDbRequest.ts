@@ -27,6 +27,7 @@ export default (res: Response, err: any, message: string) => {
     message: message,
     data: {
       err,
+      errString: err.toString(),
     },
   });
 

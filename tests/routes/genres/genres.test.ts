@@ -52,7 +52,7 @@ describe('/genres route', () => {
         .post('/genres/create')
         .send(testGenre);
 
-      const body = <GenreListResponseBody>response.body;
+      const body = <GenreResponseBody>response.body;
 
       expect(response.status)
         .toBe(200);
