@@ -4,8 +4,15 @@ import initializeModels from './models/initializeModels';
 
 export const sequelize = new Sequelize(POSTGRES_URI);
 
-export const initialiseDb = async () => {
-  await sequelize.authenticate();
+let isDbInitialised = false;
 
+export const initialiseDb = async () => {
+  if (isDbInitialised) {
+    return;
+  }
+
+  isDbInitialised = true;
+
+  await sequelize.authenticate();
   initializeModels(sequelize);
 };

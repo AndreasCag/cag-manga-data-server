@@ -13,4 +13,5 @@ module.exports = {
     '.*\\.(ts)$': 'ts-jest',
   },
   setupFilesAfterEnv: [path.resolve(__dirname, 'tests/globalSetup.ts')],
+  globalSetup: path.resolve(__dirname, 'tests/setup.ts'),
 }

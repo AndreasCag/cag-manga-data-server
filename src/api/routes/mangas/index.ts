@@ -3,6 +3,8 @@ import logger from '@/utils/logger';
 import { sequelize } from '@/db';
 import Genre from '@/db/models/Genre';
 import Manga, { CompleteType } from '@/db/models/Manga';
+import { GenreType, isGenreType } from '@/db/models/MangaGenre';
+import { isObject } from '@/utils/globalTypeGuards';
 import { Request, Response, Router } from 'express';
 import { validationResult } from 'express-validator';
 import handleErrorInDbRequest from '../../helpers/errorHandlers/handleErrorInDbRequest';
@@ -16,6 +18,7 @@ import {
   idParamValidator,
   mainImageBodyValidator,
   nameBodyValidator,
+  subgenresBodyValidator,
 } from './validators';
 
 export type MangaParams = {
@@ -29,6 +32,7 @@ type MangaBody = {
   mainImage: string;
   backgroundImage: string;
   genres: number[];
+  subgenres: number[];
 };
 
 const router = Router();
@@ -51,6 +55,7 @@ router.post(
     mainImageBodyValidator,
     backgroundImageBodyValidator,
     genresBodyValidator,
+    subgenresBodyValidator,
   ],
   async (req: Request, res: Response) => {
     logger.debug({
@@ -85,28 +90,40 @@ router.post(
       backgroundImage: body.backgroundImage,
     }, { include: [{ model: Genre, as: 'genres' }] });
 
-    try {
-      await sequelize.transaction(async (t) => {
-        await newManga.save({ transaction: t });
-        await newManga.setGenres(body.genres, { transaction: t });
-        // await newManga.getGenres({ transaction: t });
+    let newSavedMangaWithGenres: Manga;
 
-        const createdManga = await Manga.findOne({
+    try {
+      newSavedMangaWithGenres = await sequelize.transaction(async (t) => {
+        await newManga.save({ transaction: t });
+        await Promise.all([
+          newManga.setGenres(
+            body.genres,
+            {
+              // @ts-ignore Jesus wtf I don't have typings for through attribute? Have to check it out
+              through: { genreType: 'genre' },
+              transaction: t,
+            },
+          ),
+          newManga.setGenres(
+            body.subgenres,
+            {
+              // @ts-ignore Jesus wtf I don't have typings for through attribute? Have to check it out
+              through: { genreType: 'subgenre' },
+              transaction: t,
+            },
+          ),
+        ]);
+
+        newSavedMangaWithGenres = (await Manga.findOne({
           where: { id: newManga.id },
           transaction: t,
           include: [{
             model: Genre,
             as: 'genres',
           }],
-        });
+        }))!;
 
-        logger.debug({
-          category: ['router', 'createManga'],
-          message: 'Test saved manga',
-          data: {
-            manga: createdManga!.toJSON(),
-          },
-        });
+        return newSavedMangaWithGenres;
       });
     } catch (err) {
       handleErrorInDbRequest(res, err, 'Cannot save manga to db');
@@ -118,13 +135,12 @@ router.post(
       category: ['router', 'createManga'],
       message: 'Save new manga',
       data: {
-        manga: newManga.toJSON(),
-        genres: typeof newManga.genres!,
+        manga: newSavedMangaWithGenres.toJSON(),
       },
     });
 
     res.json({
-      genre: newManga.toJSON(),
+      manga: newSavedMangaWithGenres.toStructuredNestedJSON(),
     });
   },
 );
@@ -263,7 +279,25 @@ router.put(
           mainImage: body.mainImage,
           backgroundImage: body.backgroundImage,
         }, { transaction: t });
-        await updatedManga.setGenres(body.genres, { transaction: t });
+
+        await Promise.all([
+          updatedManga.setGenres(
+            body.genres,
+            {
+              // @ts-ignore Jesus wtf I don't have typings for through attribute? Have to check it out
+              through: { genreType: 'genre' },
+              transaction: t,
+            },
+          ),
+          updatedManga.setGenres(
+            body.subgenres,
+            {
+              // @ts-ignore Jesus wtf I don't have typings for through attribute? Have to check it out
+              through: { genreType: 'subgenre' },
+              transaction: t,
+            },
+          ),
+        ]);
 
         return updatedManga;
       });
@@ -282,7 +316,7 @@ router.put(
     });
 
     res.json({
-      manga: updatedManga,
+      manga: updatedManga.toStructuredNestedJSON(),
     });
   },
 );

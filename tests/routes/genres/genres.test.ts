@@ -10,6 +10,10 @@ beforeAll(async () => {
   await up(sequelize);
 });
 
+afterAll(async () => {
+  await down(sequelize);
+});
+
 type GenreListResponseBody = {
   genres: Genre[];
 };
@@ -225,8 +229,4 @@ describe('/genres route', () => {
         );
     });
   });
-});
-
-afterAll(async () => {
-  await down(sequelize);
 });

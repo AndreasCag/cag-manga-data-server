@@ -12,6 +12,9 @@ class Genre extends Model {
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  // tslint:disable-next-line:variable-name
+  public MangaGenre?: MangaGenre;
 }
 
 export default Genre;
@@ -46,6 +49,6 @@ export const initGenreAssociations = () => {
   Genre.belongsToMany(Manga, {
     through: MangaGenre,
     as: 'mangas',
-    foreignKey: 'mangaId',
+    foreignKey: 'genreId',
   });
 };

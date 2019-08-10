@@ -8,6 +8,13 @@ class MangaGenre extends Model {
 
 export default MangaGenre;
 
+export type GenreType = 'genre' | 'subgenre';
+
+// tslint:disable-next-line:no-any
+export const isGenreType = (val: any) => (
+  val === 'genre' || val === 'subgenre'
+);
+
 export const initMangaGenre = (sequelize: Sequelize) => {
   MangaGenre.init({
     genreId: {
@@ -23,6 +30,7 @@ export const initMangaGenre = (sequelize: Sequelize) => {
     },
     mangaId: {
       type: DataTypes.INTEGER.UNSIGNED,
+      allowNull: false,
       primaryKey: true,
       references: {
         model: 'Mangas', // name of Target model

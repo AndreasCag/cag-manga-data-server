@@ -6,15 +6,14 @@ import { initMangaGenre } from './MangaGenre';
 import { initPicture, initPictureAssociations } from './Picture';
 
 export default (sequelize: Sequelize) => {
+  initManga(sequelize);
   initGenre(sequelize);
+  initMangaGenre(sequelize);
   initPicture(sequelize);
   initChapter(sequelize);
-  initGenre(sequelize);
-  initManga(sequelize);
-  initMangaGenre(sequelize);
 
-  initGenreAssociations();
   initMangaAssociations();
+  initGenreAssociations();
   initPictureAssociations();
   initChapterAssociations();
 };

@@ -61,11 +61,12 @@ describe('/mangas route', () => {
 
   describe('/create subroute', () => {
     it('creates new manga', async () => {
-      const [genre] = await Genre.findAll();
+      const [firstGenre, secondGenre] = await Genre.findAll();
 
       const testMangaWithGenre = {
         ...testManga,
-        genres: [genre.id],
+        genres: [firstGenre.id],
+        subgenres: [secondGenre.id],
       };
 
       const response = await supertest(app)
@@ -79,7 +80,19 @@ describe('/mangas route', () => {
 
       expect(body)
         .toMatchObject({
-          genre: testMangaWithGenre,
+          manga: {
+            ...testManga,
+            genres: [
+              expect.objectContaining({
+                id: firstGenre.id,
+              }),
+            ],
+            subgenres: [
+              expect.objectContaining({
+                id: secondGenre.id,
+              }),
+            ],
+          },
         });
     });
 

@@ -1,4 +1,12 @@
-import { DataTypes, HasManyGetAssociationsMixin, HasManySetAssociationsMixin, Model, Sequelize } from 'sequelize';
+import UnexpectedFieldValueError from '@/errors/UnexpectedFieldValueError';
+import {
+  DataTypes,
+  HasManyAddAssociationMixin,
+  HasManyGetAssociationsMixin,
+  HasManySetAssociationsMixin,
+  Model,
+  Sequelize,
+} from 'sequelize';
 import Chapter from './Chapter';
 import Genre from './Genre';
 import MangaGenre from './MangaGenre';
@@ -19,7 +27,36 @@ class Manga extends Model {
   public readonly updatedAt!: Date;
 
   public setGenres: HasManySetAssociationsMixin<Genre, number>;
+  public addGenre: HasManyAddAssociationMixin<Genre, number>;
   public getGenres: HasManyGetAssociationsMixin<Genre>;
+
+  public toStructuredNestedJSON() {
+    const { genres } = this;
+
+    if (!genres) {
+      throw new UnexpectedFieldValueError(
+        'genres',
+        'should be retrieved on instance initialisation',
+        { genres },
+      );
+    }
+
+    return {
+      backgroundImage: this.backgroundImage,
+      completeType: this.completeType,
+      description: this.description,
+      mainImage: this.mainImage,
+      name: this.name,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      genres: genres
+        .filter(genre => genre.MangaGenre!.genreType === 'genre')
+        .map(genre => genre.toJSON()),
+      subgenres: genres
+        .filter(genre => genre.MangaGenre!.genreType === 'subgenre')
+        .map(genre => genre.toJSON()),
+    };
+  }
 }
 
 export default Manga;
@@ -66,6 +103,6 @@ export const initMangaAssociations = () => {
   Manga.belongsToMany(Genre, {
     through: MangaGenre,
     as: 'genres',
-    foreignKey: 'genreId',
+    foreignKey: 'mangaId',
   });
 };

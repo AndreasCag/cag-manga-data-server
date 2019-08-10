@@ -47,6 +47,15 @@ export const genresBodyValidator = body('genres')
   .withMessage('Should be array')
   // tslint:disable-next-line:no-any
   .custom((value: any[]) => (
-    value.every(val => typeof val === 'number')
+    value.every(value => typeof value === 'number')
   ))
-  .withMessage('Array should contain only numbers');
+  .withMessage('Array should contain numbers');
+
+export const subgenresBodyValidator = body('subgenres')
+  .isArray()
+  .withMessage('Should be array')
+  // tslint:disable-next-line:no-any
+  .custom((value: any[]) => (
+    value.every(value => typeof value === 'number')
+  ))
+  .withMessage('Array should contain numbers');
