@@ -13,8 +13,10 @@ import {
   descriptionBodyValidator,
   genresBodyValidator,
   idParamValidator,
+  limitValidator,
   mainImageBodyValidator,
   nameBodyValidator,
+  offsetValidator,
   releaseDateValidator,
   subgenresBodyValidator,
 } from './validators';
@@ -34,38 +36,67 @@ type MangaBody = {
   releaseDate?: number;
 };
 
+type ListMangaQuery = {
+  limit: string;
+  offset: string;
+};
+
 const router = Router();
 
-router.get('/list', async (req, res) => {
-  logger.debug({
-    category: ['router', 'mangasList'],
-    message: 'Get mangas request',
-  });
-
-  let mangas: Manga[];
-
-  try {
-    mangas = await Manga.findAll({
-      include: [{
-        model: Genre,
-        as: 'genres',
-      }],
+router.get(
+  '/list',
+  [
+    limitValidator,
+    offsetValidator,
+  ],
+  async (req: Request, res: Response) => {
+    logger.debug({
+      category: ['router', 'mangasList'],
+      message: 'Get mangas request',
     });
-  } catch (err) {
-    handleErrorInDbRequest(res, err, 'Cannot retain mangas from db');
 
-    return;
-  }
+    const errors = validationResult(req);
 
-  logger.debug({
-    category: ['router', 'mangasList'],
-    message: 'Send mangas',
-  });
+    if (!errors.isEmpty()) {
+      const validationErrors = errors.array();
 
-  res.json({
-    mangas: mangas.map(manga => manga.toStructuredNestedJSON()),
-  });
-});
+      handleValidationError(
+        res,
+        validationErrors,
+        'Get mangas request failed validation',
+      );
+
+      return;
+    }
+
+    const query = <ListMangaQuery>req.query;
+    let mangas: Manga[];
+
+    try {
+      mangas = await Manga.findAll({
+        include: [{
+          model: Genre,
+          as: 'genres',
+        }],
+        offset: Number(query.offset),
+        limit: Number(query.limit),
+      });
+    } catch (err) {
+      handleErrorInDbRequest(res, err, 'Cannot retain mangas from db');
+
+      return;
+    }
+
+    logger.debug({
+      category: ['router', 'mangasList'],
+      message: 'Send mangas',
+    });
+
+    res.json({
+      mangas: mangas.map(manga => manga.toStructuredNestedJSON()),
+    });
+  },
+);
 
 // public name!: string;
 // public completeType!: 'ongoing' | 'completed';
