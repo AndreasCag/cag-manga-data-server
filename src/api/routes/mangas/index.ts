@@ -38,7 +38,29 @@ type MangaBody = {
 const router = Router();
 
 router.get('/list', async (req, res) => {
-  // @TODO Implement
+  logger.debug({
+    category: ['router', 'mangasList'],
+    message: 'Get mangas request',
+  });
+
+  let mangas: Genre[];
+
+  try {
+    mangas = await Manga.findAll();
+  } catch (err) {
+    handleErrorInDbRequest(res, err, 'Cannot retain mangas from db');
+
+    return;
+  }
+
+  logger.debug({
+    category: ['router', 'mangasList'],
+    message: 'Send mangas',
+  });
+
+  res.json({
+    mangas,
+  });
 });
 
 // public name!: string;
@@ -96,18 +118,18 @@ router.post(
       newSavedMangaWithGenres = await sequelize.transaction(async (t) => {
         await newManga.save({ transaction: t });
         await Promise.all([
-          newManga.setGenres(
+          newManga.addGenres(
             body.genres,
             {
-              // @ts-ignore Jesus wtf I don't have typings for through attribute? Have to check it out
+              // @ts-ignore I don't have typings for through attribute? Have to check it out
               through: { genreType: 'genre' },
               transaction: t,
             },
           ),
-          newManga.setGenres(
+          newManga.addGenres(
             body.subgenres,
             {
-              // @ts-ignore Jesus wtf I don't have typings for through attribute? Have to check it out
+              // @ts-ignore I don't have typings for through attribute? Have to check it out
               through: { genreType: 'subgenre' },
               transaction: t,
             },
@@ -280,26 +302,31 @@ router.put(
           backgroundImage: body.backgroundImage,
         }, { transaction: t });
 
-        await Promise.all([
-          updatedManga.setGenres(
-            body.genres,
-            {
-              // @ts-ignore Jesus wtf I don't have typings for through attribute? Have to check it out
-              through: { genreType: 'genre' },
-              transaction: t,
-            },
-          ),
-          updatedManga.setGenres(
-            body.subgenres,
-            {
-              // @ts-ignore Jesus wtf I don't have typings for through attribute? Have to check it out
-              through: { genreType: 'subgenre' },
-              transaction: t,
-            },
-          ),
-        ]);
+        await updatedManga.setGenres(
+          body.genres,
+          {
+            // @ts-ignore Jesus wtf I don't have typings for through attribute? Have to check it out
+            through: { genreType: 'genre' },
+            transaction: t,
+          },
+        );
+        await updatedManga.addGenres(
+          body.subgenres,
+          {
+            // @ts-ignore Jesus wtf I don't have typings for through attribute? Have to check it out
+            through: { genreType: 'subgenre' },
+            transaction: t,
+          },
+        );
 
-        return updatedManga;
+        return (await Manga.findOne({
+          where: { id: updatedManga.id },
+          transaction: t,
+          include: [{
+            model: Genre,
+            as: 'genres',
+          }],
+        }))!;
       });
     } catch (err) {
       handleErrorInDbRequest(res, err, 'Cannot update manga in db');

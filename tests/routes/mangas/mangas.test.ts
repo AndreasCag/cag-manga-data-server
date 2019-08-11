@@ -16,8 +16,8 @@ afterAll(async () => {
   await down(sequelize);
 });
 
-type GenreListResponseBody = {
-  genres: Genre[];
+type MangaListResponseBody = {
+  mangas: Manga[];
 };
 
 type MangaResponseBody = {
@@ -37,6 +37,14 @@ const testManga = {
   backgroundImage: 'background image',
 };
 
+const updatedTestManga = {
+  name: 'New test genre 2',
+  completeType: 'completed',
+  description: 'New test genre description 2',
+  mainImage: 'main image 2',
+  backgroundImage: 'background image 2',
+};
+
 // const updatedTestGenre = {
 //   name: 'New test genre2',
 //   description: 'New test genre description2',
@@ -44,20 +52,6 @@ const testManga = {
 // };
 
 describe('/mangas route', () => {
-  // describe('/list subroute', () => {
-  //   it('returns list of genres', async () => {
-  //     const response = await supertest(app)
-  //       .get('/genres/list');
-
-  //     const body = <GenreListResponseBody>response.body;
-
-  //     expect(response.status)
-  //       .toBe(200);
-
-  //     expect(body.genres)
-  //       .toMatchObject(seedData);
-  //   });
-  // });
 
   describe('/create subroute', () => {
     it('creates new manga', async () => {
@@ -96,166 +90,209 @@ describe('/mangas route', () => {
         });
     });
 
-    // it('Send error if genre with similar name already exists', async () => {
-    //   const response = await supertest(app)
-    //     .post('/genres/create')
-    //     .send(testGenre);
+    it('sends validation errors', async () => {
+      const response = await supertest(app)
+        .post('/mangas/create')
+        .send({
+          name: '',
+          completeType: '',
+          description: '',
+          mainImage: '',
+          backgroundImage: '',
+        });
 
-    //   const body = <GenreListResponseBody>response.body;
+      const body = <MangaResponseBody>response.body;
 
-    //   expect(response.status)
-    //     .toBe(422);
+      expect(response.status)
+        .toBe(422);
 
-    //   expect(body)
-    //     .toMatchObject({
-    //       code: 3,
-    //       data: {
-    //         errors: [{
-    //           param: 'name',
-    //         }],
-    //       },
-    //     });
-    // });
-
-    // it('Sends error if name or description doesn\'t set', async () => {
-    //   const response = await supertest(app)
-    //     .post('/genres/create')
-    //     .send({ name: '', genre: '' });
-
-    //   const body = <ValidationErrorBody>response.body;
-
-    //   expect(response.status)
-    //     .toBe(422);
-
-    //   expect(body)
-    //     .toEqual(
-    //       generateValidationErrorBody('name', 'description'),
-    //     );
-    // });
+      expect(body)
+        .toEqual(
+          generateValidationErrorBody(
+            'name',
+            'completeType',
+            'description',
+            'mainImage',
+            'backgroundImage',
+            'genres',
+            'genres',
+            'subgenres',
+            'subgenres',
+          ),
+        );
+    });
   });
 
-  // describe('/:id subroute', () => {
-  //   it('returns selected genre', async () => {
-  //     const response = await supertest(app)
-  //       .get('/genres/4');
+  describe('/list subroute', () => {
+    it('returns list of genres', async () => {
+      const response = await supertest(app)
+        .get('/mangas/list');
 
-  //     const body = <GenreResponseBody>response.body;
+      const body = <MangaListResponseBody>response.body;
 
-  //     expect(response.status)
-  //       .toBe(200);
+      expect(response.status)
+        .toBe(200);
 
-  //     expect(body.genre)
-  //       .toMatchObject(testGenre);
-  //   });
+      expect(body.mangas)
+        .toMatchObject([testManga]);
+    });
+  });
 
-  //   it('returns error if genre doesn\'t exist', async () => {
-  //     const id = 100;
+  describe('/:id subroute', () => {
+    it('returns selected manga', async () => {
+      const manga = (await Manga.findOne())!;
+      const response = await supertest(app)
+        .get(`/mangas/${manga.id}`);
 
-  //     const response = await supertest(app)
-  //       .get(`/genres/${id}`);
+      const body = <MangaResponseBody>response.body;
 
-  //     const body = response.body;
+      expect(response.status)
+        .toBe(200);
 
-  //     expect(response.status)
-  //       .toBe(404);
+      expect(body.manga)
+        .toMatchObject(testManga);
+    });
 
-  //     expect(body)
-  //       .toEqual(
-  //         expect.objectContaining({
-  //           code: 4,
-  //           data: {
-  //             id: id.toString(),
-  //           },
-  //         }),
-  //       );
-  //   });
-  // });
+    it('returns error if manga doesn\'t exist', async () => {
+      const id = -100;
 
-  // describe('/:id/edit subroute', () => {
-  //   it('edits selected genre', async () => {
-  //     const response = await supertest(app)
-  //       .put('/genres/4/edit')
-  //       .send(updatedTestGenre);
+      const response = await supertest(app)
+        .get(`/mangas/${id}`);
 
-  //     const body = <GenreResponseBody>response.body;
+      const body = response.body;
 
-  //     expect(response.status)
-  //       .toBe(200);
+      expect(response.status)
+        .toBe(404);
 
-  //     expect(body.genre)
-  //       .toMatchObject(updatedTestGenre);
-  //   });
+      expect(body)
+        .toEqual(
+          expect.objectContaining({
+            code: 4,
+            data: {
+              id: id.toString(),
+            },
+          }),
+        );
+    });
+  });
 
-  //   it('returns error if genre doesn\'t exist', async () => {
-  //     const id = 100;
+  describe('/:id/edit subroute', () => {
+    it('edits selected manga', async () => {
+      const manga = (await Manga.findOne())!;
+      const [firstGenre, secondGenre] = await Genre.findAll();
 
-  //     const response = await supertest(app)
-  //       .put(`/genres/${id}/edit`)
-  //       .send(testGenre);
+      const response = await supertest(app)
+        .put(`/mangas/${manga.id}/edit`)
+        .send({
+          ...updatedTestManga,
+          genres: [secondGenre.id],
+          subgenres: [firstGenre.id],
+        });
 
-  //     const body = response.body;
+      const body = <MangaResponseBody>response.body;
 
-  //     expect(response.status)
-  //       .toBe(404);
+      expect(response.status)
+        .toBe(200);
 
-  //     expect(body)
-  //       .toEqual(
-  //         expect.objectContaining({
-  //           code: 4,
-  //           data: {
-  //             id: id.toString(),
-  //           },
-  //         }),
-  //       );
-  //   });
+      expect(body.manga)
+        .toMatchObject({
+          ...updatedTestManga,
+          genres: [{
+            id: secondGenre.id,
+          }],
+          subgenres: [{
+            id: firstGenre.id,
+          }],
+        });
+    });
 
-  //   it('returns error if genre has validation errors', async () => {
-  //     const response = await supertest(app)
-  //       .put(`/genres/4/edit`)
-  //       .send({
-  //         name: seedData[0].name,
-  //         description: '',
-  //       });
+    it('returns error if manga doesn\'t exist', async () => {
+      const id = -100;
 
-  //     const body = response.body;
+      const response = await supertest(app)
+        .put(`/mangas/${id}/edit`)
+        .send({
+          ...testManga,
+          genres: [],
+          subgenres: [],
+        });
 
-  //     expect(response.status)
-  //       .toBe(422);
+      const body = response.body;
 
-  //     expect(body)
-  //       .toEqual(
-  //         generateValidationErrorBody('name', 'description'),
-  //       );
-  //   });
-  // });
+      expect(response.status)
+        .toBe(404);
 
-  // describe('/:id/delete subroute', () => {
-  //   it('deletes selected genre', async () => {
-  //     const response = await supertest(app)
-  //       .delete('/genres/4/delete');
+      expect(body)
+        .toEqual(
+          expect.objectContaining({
+            code: 4,
+            data: {
+              id: id.toString(),
+            },
+          }),
+        );
+    });
 
-  //     expect(response.status)
-  //       .toBe(200);
-  //   });
+    it('returns error if genre has validation errors', async () => {
+      const manga = (await Manga.findOne())!;
 
-  //   it('returns error if genre doesn\'t exist', async () => {
-  //     const id = 4;
+      const response = await supertest(app)
+        .put(`/mangas/${manga.id}/edit`)
+        .send({});
 
-  //     const response = await supertest(app)
-  //       .delete(`/genres/${id}/delete`);
+      const body = response.body;
 
-  //     expect(response.status)
-  //       .toBe(404);
+      expect(response.status)
+        .toBe(422);
 
-  //       expect(response.body)
-  //       .toEqual(
-  //         expect.objectContaining({
-  //           code: 4,
-  //           data: {
-  //             id: id.toString(),
-  //           },
-  //         }),
-  //       );
-  //   });
-  // });
+      expect(body)
+        .toEqual(
+          generateValidationErrorBody(
+            'name',
+            'name',
+            'completeType',
+            'description',
+            'description',
+            'mainImage',
+            'mainImage',
+            'backgroundImage',
+            'backgroundImage',
+            'genres',
+            'genres',
+          ),
+        );
+    });
+  });
+
+  describe('/:id/delete subroute', () => {
+    it('deletes selected manga', async () => {
+      const manga = (await Manga.findOne())!;
+
+      const response = await supertest(app)
+        .delete(`/mangas/${manga.id}/delete`);
+
+      expect(response.status)
+        .toBe(200);
+    });
+
+    it('returns error if genre doesn\'t exist', async () => {
+      const id = -100;
+
+      const response = await supertest(app)
+        .delete(`/mangas/${id}/delete`);
+
+      expect(response.status)
+        .toBe(404);
+
+        expect(response.body)
+        .toEqual(
+          expect.objectContaining({
+            code: 4,
+            data: {
+              id: id.toString(),
+            },
+          }),
+        );
+    });
+  });
 });

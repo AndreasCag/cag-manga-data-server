@@ -2,6 +2,7 @@ import UnexpectedFieldValueError from '@/errors/UnexpectedFieldValueError';
 import {
   DataTypes,
   HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
   HasManyGetAssociationsMixin,
   HasManySetAssociationsMixin,
   Model,
@@ -28,6 +29,7 @@ class Manga extends Model {
 
   public setGenres: HasManySetAssociationsMixin<Genre, number>;
   public addGenre: HasManyAddAssociationMixin<Genre, number>;
+  public addGenres: HasManyAddAssociationsMixin<Genre, number>;
   public getGenres: HasManyGetAssociationsMixin<Genre>;
 
   public toStructuredNestedJSON() {
