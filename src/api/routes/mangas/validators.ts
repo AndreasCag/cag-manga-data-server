@@ -3,7 +3,7 @@
   // public description!: string;
   // public mainImage!: string;
   // public backgroundImage!: string;
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import moment from 'moment';
 
 export const nameBodyValidator = body('name')
@@ -77,3 +77,7 @@ export const releaseDateValidator = body('releaseDate')
     return momentDate.isBetween(momentMinDate, momentTodayDate);
   });
   // tslint:enable:no-any no-unsafe-any
+
+export const limitValidator = query('limit')
+  .isNumeric()
+  .withMessage('Should be number');

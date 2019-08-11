@@ -35,6 +35,7 @@ const testManga = {
   description: 'New test genre description',
   mainImage: 'main image',
   backgroundImage: 'background image',
+  releaseDate: 1565542427602,
 };
 
 const updatedTestManga = {

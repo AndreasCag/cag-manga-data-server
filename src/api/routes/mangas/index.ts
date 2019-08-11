@@ -42,10 +42,15 @@ router.get('/list', async (req, res) => {
     message: 'Get mangas request',
   });
 
-  let mangas: Genre[];
+  let mangas: Manga[];
 
   try {
-    mangas = await Manga.findAll();
+    mangas = await Manga.findAll({
+      include: [{
+        model: Genre,
+        as: 'genres',
+      }],
+    });
   } catch (err) {
     handleErrorInDbRequest(res, err, 'Cannot retain mangas from db');
 
@@ -58,7 +63,7 @@ router.get('/list', async (req, res) => {
   });
 
   res.json({
-    mangas,
+    mangas: mangas.map(manga => manga.toStructuredNestedJSON()),
   });
 });
 
@@ -201,7 +206,13 @@ router.get(
     let manga: Manga | null;
 
     try {
-      manga = await Manga.findOne({ where: { id: params.id } });
+      manga = await Manga.findOne({
+        where: { id: params.id },
+        include: [{
+          model: Genre,
+          as: 'genres',
+        }],
+      });
     } catch (err) {
       handleErrorInDbRequest(res, err, 'Cannot retain manga from db');
 
@@ -254,7 +265,7 @@ router.get(
     });
 
     res.json({
-      manga,
+      manga: manga.toStructuredNestedJSON(),
     });
   },
 );

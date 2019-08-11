@@ -63,7 +63,7 @@ class Manga extends Model {
       mainImage,
       name,
       popularity,
-      releaseDate,
+      releaseDate: releaseDate && releaseDate.getTime(),
       createdAt,
       updatedAt,
       genres: genres
