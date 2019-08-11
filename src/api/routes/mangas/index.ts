@@ -1,10 +1,7 @@
-import logger from '@/utils/logger';
-
 import { sequelize } from '@/db';
 import Genre from '@/db/models/Genre';
 import Manga, { CompleteType } from '@/db/models/Manga';
-import { GenreType, isGenreType } from '@/db/models/MangaGenre';
-import { isObject } from '@/utils/globalTypeGuards';
+import logger from '@/utils/logger';
 import { Request, Response, Router } from 'express';
 import { validationResult } from 'express-validator';
 import handleErrorInDbRequest from '../../helpers/errorHandlers/handleErrorInDbRequest';
@@ -223,9 +220,37 @@ router.get(
       return;
     }
 
+    // @TODO optimize
+    manga.update({
+      popularity: manga.popularity + 1,
+    })
+      .then((manga) => {
+        logger.debug({
+          category: ['router', 'getManga'],
+          message: 'Update manga popularity',
+          data: {
+            id: manga.id,
+            popularity: manga.popularity,
+          },
+        });
+      })
+      .catch((err) => {
+        logger.warn({
+          category: ['router', 'getManga'],
+          message: 'Update manga popularity failed',
+          data: {
+            id: manga!.id,
+            err,
+          },
+        });
+      });
+
     logger.debug({
       category: ['router', 'getManga'],
       message: 'Send manga',
+      data: {
+        id: manga.id,
+      },
     });
 
     res.json({

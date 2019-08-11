@@ -21,6 +21,7 @@ class Manga extends Model {
   public description!: string;
   public mainImage!: string;
   public backgroundImage!: string;
+  public popularity: number;
   public releaseDate?: Date;
   public chapters?: Chapter[];
   public genres?: Genre[];
@@ -34,7 +35,18 @@ class Manga extends Model {
   public getGenres: HasManyGetAssociationsMixin<Genre>;
 
   public toStructuredNestedJSON() {
-    const { genres } = this;
+    const {
+      genres,
+      backgroundImage,
+      completeType,
+      description,
+      mainImage,
+      name,
+      popularity,
+      releaseDate,
+      createdAt,
+      updatedAt,
+    } = this;
 
     if (!genres) {
       throw new UnexpectedFieldValueError(
@@ -45,13 +57,15 @@ class Manga extends Model {
     }
 
     return {
-      backgroundImage: this.backgroundImage,
-      completeType: this.completeType,
-      description: this.description,
-      mainImage: this.mainImage,
-      name: this.name,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      backgroundImage,
+      completeType,
+      description,
+      mainImage,
+      name,
+      popularity,
+      releaseDate,
+      createdAt,
+      updatedAt,
       genres: genres
         .filter(genre => genre.MangaGenre!.genreType === 'genre')
         .map(genre => genre.toJSON()),
@@ -95,6 +109,11 @@ export const initManga = (sequelize: Sequelize) => {
     releaseDate: {
       type: new DataTypes.DATE(),
       allowNull: true,
+    },
+    popularity: {
+      type: new DataTypes.INTEGER(),
+      allowNull: false,
+      defaultValue: 0,
     },
   }, {
     tableName: 'Mangas',
