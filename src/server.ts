@@ -38,5 +38,5 @@ const startServer = async () => {
   }
 };
 
-export const sartServerPromise = startServer();
+export const startServerPromise = startServer();
 export { app };
