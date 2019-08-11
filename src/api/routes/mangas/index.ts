@@ -1,12 +1,15 @@
+import sortOrderValidator from '@/api/helpers/validators/sortOrderValidator';
 import { sequelize } from '@/db';
 import Genre from '@/db/models/Genre';
 import Manga, { CompleteType } from '@/db/models/Manga';
+import { sequelizeSortOrderMap, SortOrder } from '@/types';
 import logger from '@/utils/logger';
 import { Request, Response, Router } from 'express';
 import { validationResult } from 'express-validator';
 import handleErrorInDbRequest from '../../helpers/errorHandlers/handleErrorInDbRequest';
 import handleRecordNotFoundError from '../../helpers/errorHandlers/handleRecordNotFoundError';
 import handleValidationError from '../../helpers/errorHandlers/handleValidationError';
+import { ListMangaSortColumn } from './listMangaSortColumn';
 import {
   backgroundImageBodyValidator,
   completeTypeBodyValidator,
@@ -18,6 +21,7 @@ import {
   nameBodyValidator,
   offsetValidator,
   releaseDateValidator,
+  sortColumnValidator,
   subgenresBodyValidator,
 } from './validators';
 
@@ -39,6 +43,8 @@ type MangaBody = {
 type ListMangaQuery = {
   limit: string;
   offset: string;
+  sortColumn: ListMangaSortColumn;
+  sortOrder: SortOrder;
 };
 
 const router = Router();
@@ -48,6 +54,8 @@ router.get(
   [
     limitValidator,
     offsetValidator,
+    sortColumnValidator,
+    sortOrderValidator,
   ],
   async (req: Request, res: Response) => {
     logger.debug({
@@ -80,6 +88,9 @@ router.get(
         }],
         offset: Number(query.offset),
         limit: Number(query.limit),
+        order: [
+          [query.sortColumn, sequelizeSortOrderMap[query.sortOrder]],
+        ],
       });
     } catch (err) {
       handleErrorInDbRequest(res, err, 'Cannot retain mangas from db');

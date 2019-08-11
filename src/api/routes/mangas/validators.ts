@@ -1,4 +1,7 @@
 import { isNaturalNumber } from '@/utils/globalDataCheckers';
+import { body, param, query } from 'express-validator';
+import moment from 'moment';
+import { availableListMangaSortColumns, isListMangaSortColumn } from './listMangaSortColumn';
 // tslint:disable:no-any no-unsafe-any
 
   // public name!: string;
@@ -6,8 +9,6 @@ import { isNaturalNumber } from '@/utils/globalDataCheckers';
   // public description!: string;
   // public mainImage!: string;
   // public backgroundImage!: string;
-import { body, param, query } from 'express-validator';
-import moment from 'moment';
 
 export const nameBodyValidator = body('name')
   .isString()
@@ -88,4 +89,7 @@ export const offsetValidator = query('offset')
   .custom((value: any) => isNaturalNumber(Number(value)))
   .withMessage('Should be natural number');
 
-  // tslint:enable:no-any no-unsafe-any
+export const sortColumnValidator = query('sortColumn')
+  .custom(isListMangaSortColumn)
+  .withMessage(`Value should be one of these values: ${availableListMangaSortColumns.join(' ')}`);
+// tslint:enable:no-any no-unsafe-any

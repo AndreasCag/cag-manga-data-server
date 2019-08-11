@@ -127,7 +127,7 @@ describe('/mangas route', () => {
   describe('/list subroute', () => {
     it('returns list of genres', async () => {
       const response = await supertest(app)
-        .get('/mangas/list?limit=100&offset=0');
+        .get('/mangas/list?limit=100&offset=0&sortColumn=popularity&sortOrder=descending');
 
       const body = <MangaListResponseBody>response.body;
 
