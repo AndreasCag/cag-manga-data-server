@@ -21,6 +21,7 @@ class Manga extends Model {
   public description!: string;
   public mainImage!: string;
   public backgroundImage!: string;
+  public releaseDate?: Date;
   public chapters?: Chapter[];
   public genres?: Genre[];
 
@@ -90,6 +91,10 @@ export const initManga = (sequelize: Sequelize) => {
     backgroundImage: {
       type: new DataTypes.STRING(),
       allowNull: false,
+    },
+    releaseDate: {
+      type: new DataTypes.DATE(),
+      allowNull: true,
     },
   }, {
     tableName: 'Mangas',

@@ -4,6 +4,7 @@
   // public mainImage!: string;
   // public backgroundImage!: string;
 import { body, param } from 'express-validator';
+import moment from 'moment';
 
 export const nameBodyValidator = body('name')
   .isString()
@@ -61,3 +62,18 @@ export const subgenresBodyValidator = body('subgenres')
     && value.every(value => typeof value === 'number')
   ))
   .withMessage('Array should contain numbers');
+
+const momentMinDate = moment('1920', 'YYYY');
+
+export const releaseDateValidator = body('releaseDate')
+  .optional()
+  .isNumeric()
+  .withMessage('Should be number')
+  // tslint:disable:no-any no-unsafe-any
+  .custom((value: any) => {
+    const momentDate = moment(value, 'x');
+    const momentTodayDate = moment();
+
+    return momentDate.isBetween(momentMinDate, momentTodayDate);
+  });
+  // tslint:enable:no-any no-unsafe-any

@@ -18,6 +18,7 @@ import {
   idParamValidator,
   mainImageBodyValidator,
   nameBodyValidator,
+  releaseDateValidator,
   subgenresBodyValidator,
 } from './validators';
 
@@ -33,6 +34,7 @@ type MangaBody = {
   backgroundImage: string;
   genres: number[];
   subgenres: number[];
+  releaseDate?: number;
 };
 
 const router = Router();
@@ -78,6 +80,7 @@ router.post(
     backgroundImageBodyValidator,
     genresBodyValidator,
     subgenresBodyValidator,
+    releaseDateValidator,
   ],
   async (req: Request, res: Response) => {
     logger.debug({
@@ -110,6 +113,7 @@ router.post(
       description: body.description,
       mainImage: body.mainImage,
       backgroundImage: body.backgroundImage,
+      releaseDate: body.releaseDate,
     }, { include: [{ model: Genre, as: 'genres' }] });
 
     let newSavedMangaWithGenres: Manga;
@@ -240,6 +244,7 @@ router.put(
     mainImageBodyValidator,
     backgroundImageBodyValidator,
     genresBodyValidator,
+    releaseDateValidator,
   ],
   async (req: Request, res: Response) => {
     const params = (<MangaParams>req.params);
@@ -300,6 +305,7 @@ router.put(
           description: body.description,
           mainImage: body.mainImage,
           backgroundImage: body.backgroundImage,
+          releaseDate: body.releaseDate,
         }, { transaction: t });
 
         await updatedManga.setGenres(
