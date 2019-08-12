@@ -9,12 +9,26 @@ class Genre extends Model {
   public id!: number;
   public name!: string;
   public description!: string;
+  public image!: string;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
   // tslint:disable-next-line:variable-name
   public MangaGenre?: MangaGenre;
+
+  public toStructuredJSON() {
+    const { id, name, description, image, createdAt, updatedAt } = this;
+
+    return {
+      id,
+      name,
+      description,
+      image,
+      createdAt: Number(createdAt),
+      updatedAt: Number(updatedAt),
+    };
+  }
 }
 
 export default Genre;

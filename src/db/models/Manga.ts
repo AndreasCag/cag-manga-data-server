@@ -13,6 +13,12 @@ import Genre from './Genre';
 import MangaGenre from './MangaGenre';
 
 export type CompleteType = 'ongoing' | 'completed';
+export const availableCompleteTypes: CompleteType[] = ['ongoing', 'completed'];
+// tslint:disable:no-any no-unsafe-any
+export const isCompleteType = (value: any) => (
+  availableCompleteTypes.includes(value)
+);
+// tslint:enable:no-any no-unsafe-any
 
 class Manga extends Model {
   public id!: number;
@@ -68,10 +74,10 @@ class Manga extends Model {
       updatedAt,
       genres: genres
         .filter(genre => genre.MangaGenre!.genreType === 'genre')
-        .map(genre => genre.toJSON()),
+        .map(genre => genre.toStructuredJSON()),
       subgenres: genres
         .filter(genre => genre.MangaGenre!.genreType === 'subgenre')
-        .map(genre => genre.toJSON()),
+        .map(genre => genre.toStructuredJSON()),
     };
   }
 }

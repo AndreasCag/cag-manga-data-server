@@ -6,6 +6,7 @@ import { sequelizeSortOrderMap, SortOrder } from '@/types';
 import logger from '@/utils/logger';
 import { Request, Response, Router } from 'express';
 import { validationResult } from 'express-validator';
+import { Op } from 'sequelize';
 import handleErrorInDbRequest from '../../helpers/errorHandlers/handleErrorInDbRequest';
 import handleRecordNotFoundError from '../../helpers/errorHandlers/handleRecordNotFoundError';
 import handleValidationError from '../../helpers/errorHandlers/handleValidationError';
@@ -13,12 +14,14 @@ import { ListMangaSortColumn } from './listMangaSortColumn';
 import {
   backgroundImageBodyValidator,
   completeTypeBodyValidator,
+  completeTypeValidator,
   descriptionBodyValidator,
   genresBodyValidator,
   idParamValidator,
   limitValidator,
   mainImageBodyValidator,
   nameBodyValidator,
+  nameValidator,
   offsetValidator,
   releaseDateValidator,
   sortColumnValidator,
@@ -45,9 +48,49 @@ type ListMangaQuery = {
   offset: string;
   sortColumn: ListMangaSortColumn;
   sortOrder: SortOrder;
+  completeType?: CompleteType;
+  name?: string;
 };
 
 const router = Router();
+
+type ListWhereName = {
+  name: {
+    [Op.iLike]: string;
+  };
+};
+
+type ListWhereCompleteType = {
+  completeType: CompleteType;
+};
+
+type ListWhere = undefined | ListWhereName | ListWhereCompleteType | (ListWhereCompleteType & ListWhereName);
+
+const getWhereObject = (query: ListMangaQuery): ListWhere => {
+  if (!query.name && !query.completeType) {
+    return undefined;
+  }
+
+  let where: ListWhere;
+
+  if (query.completeType) {
+    where = {
+      completeType: query.completeType,
+    };
+  }
+
+  if (query.name) {
+    where = {
+      ...where,
+      name: {
+        // @TODO escape somehow name
+        [Op.iLike]: `%${query.name}%`,
+      },
+    };
+  }
+
+  return where;
+};
 
 router.get(
   '/list',
@@ -56,6 +99,8 @@ router.get(
     offsetValidator,
     sortColumnValidator,
     sortOrderValidator,
+    completeTypeValidator,
+    nameValidator,
   ],
   async (req: Request, res: Response) => {
     logger.debug({
@@ -85,12 +130,18 @@ router.get(
         include: [{
           model: Genre,
           as: 'genres',
+          through: {
+            where: {
+              genreType: 'genre',
+            },
+          },
         }],
         offset: Number(query.offset),
         limit: Number(query.limit),
         order: [
           [query.sortColumn, sequelizeSortOrderMap[query.sortOrder]],
         ],
+        where: getWhereObject(query),
       });
     } catch (err) {
       handleErrorInDbRequest(res, err, 'Cannot retain mangas from db');

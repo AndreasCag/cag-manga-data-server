@@ -30,25 +30,25 @@ type MangaResponseBody = {
 // public mainImage!: string;
 // public backgroundImage!: string;
 const testManga = {
-  name: 'New test genre',
+  name: 'New test manga',
   completeType: 'ongoing',
-  description: 'New test genre description',
+  description: 'New test manga description',
   mainImage: 'main image',
   backgroundImage: 'background image',
   releaseDate: 1565542427602,
 };
 
 const updatedTestManga = {
-  name: 'New test genre 2',
+  name: 'New test manga 2',
   completeType: 'completed',
-  description: 'New test genre description 2',
+  description: 'New test manga description 2',
   mainImage: 'main image 2',
   backgroundImage: 'background image 2',
 };
 
 // const updatedTestGenre = {
-//   name: 'New test genre2',
-//   description: 'New test genre description2',
+//   name: 'New test manga2',
+//   description: 'New test manga description2',
 //   image: 'image_5',
 // };
 
@@ -127,7 +127,7 @@ describe('/mangas route', () => {
   describe('/list subroute', () => {
     it('returns list of genres', async () => {
       const response = await supertest(app)
-        .get('/mangas/list?limit=100&offset=0&sortColumn=popularity&sortOrder=descending');
+        .get('/mangas/list?limit=100&offset=0&sortColumn=popularity&sortOrder=descending&name=test%20manga');
 
       const body = <MangaListResponseBody>response.body;
 
@@ -276,7 +276,7 @@ describe('/mangas route', () => {
         .toBe(200);
     });
 
-    it('returns error if genre doesn\'t exist', async () => {
+    it('returns error if manga doesn\'t exist', async () => {
       const id = -100;
 
       const response = await supertest(app)

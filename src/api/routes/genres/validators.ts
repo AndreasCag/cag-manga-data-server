@@ -13,8 +13,10 @@ export const newNameBodyValidator = body('name')
   .isLength({ max: maxNameLength })
   .withMessage(`Should have length <= ${maxNameLength}`)
   .custom(async (value: string) => {
+    let genre: Genre | null;
+
     try {
-      const genre = await Genre
+      genre = await Genre
         .findOne({ where: { name: value } });
 
       logger.debug({
@@ -24,20 +26,20 @@ export const newNameBodyValidator = body('name')
           genre: genre && genre.toJSON(),
         },
       });
-
-      if (genre !== null) {
-        throw new Error('Genre with that name already exists');
-      }
     } catch (err) {
       logger.warn({
         category: 'router',
-        message: 'Catch err on genre valdation',
+        message: 'Catch err on genre validation',
         data: {
           err,
         },
       });
 
       throw new Error('Custom validator request failed');
+    }
+
+    if (genre !== null) {
+      throw new Error('Genre with that name already exists');
     }
   })
   .withMessage(`Should be unique`);
@@ -74,6 +76,8 @@ export const updateNameBodyValidator = body('name')
         message: 'Catch err on genre update validation',
         data: {
           err,
+          // tslint:disable-next-line:no-unsafe-any
+          stringErr: err.toString(),
         },
       });
 

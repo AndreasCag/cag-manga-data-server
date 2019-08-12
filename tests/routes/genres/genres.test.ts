@@ -1,3 +1,4 @@
+
 import { app } from '@/api';
 import ValidationErrorBody from '@/api/helpers/errorBodies/ValidationErrorBody';
 import { sequelize } from '@/db';
@@ -46,7 +47,11 @@ describe('/genres route', () => {
         .toBe(200);
 
       expect(body.genres)
-        .toMatchObject(seedData);
+        .toMatchObject(seedData.map(initialGenre => ({
+          ...initialGenre,
+          createdAt: new Date(initialGenre.createdAt).getTime(),
+          updatedAt: new Date(initialGenre.createdAt).getTime(),
+        })));
     });
   });
 
@@ -107,8 +112,9 @@ describe('/genres route', () => {
 
   describe('/:id subroute', () => {
     it('returns selected genre', async () => {
+      const genre = (await Genre.findOne())!;
       const response = await supertest(app)
-        .get('/genres/4');
+        .get(`/genres/${genre.id}`);
 
       const body = <GenreResponseBody>response.body;
 
@@ -116,11 +122,13 @@ describe('/genres route', () => {
         .toBe(200);
 
       expect(body.genre)
-        .toMatchObject(testGenre);
+        .toMatchObject({
+          ...genre.toStructuredJSON(),
+        });
     });
 
     it('returns error if genre doesn\'t exist', async () => {
-      const id = 100;
+      const id = -100;
 
       const response = await supertest(app)
         .get(`/genres/${id}`);
@@ -144,8 +152,10 @@ describe('/genres route', () => {
 
   describe('/:id/edit subroute', () => {
     it('edits selected genre', async () => {
+      const genre = (await Genre.findOne())!;
+
       const response = await supertest(app)
-        .put('/genres/4/edit')
+        .put(`/genres/${genre.id}/edit`)
         .send(updatedTestGenre);
 
       const body = <GenreResponseBody>response.body;
@@ -158,11 +168,15 @@ describe('/genres route', () => {
     });
 
     it('returns error if genre doesn\'t exist', async () => {
-      const id = 100;
+      const id = -100;
 
       const response = await supertest(app)
         .put(`/genres/${id}/edit`)
-        .send(testGenre);
+        .send({
+          name: 'test name',
+          image: 'test image',
+          description: 'test description',
+        });
 
       const body = response.body;
 
@@ -181,10 +195,12 @@ describe('/genres route', () => {
     });
 
     it('returns error if genre has validation errors', async () => {
+      const [firstGenre, secondGenre] = await Genre.findAll();
+
       const response = await supertest(app)
-        .put(`/genres/4/edit`)
+        .put(`/genres/${firstGenre.id}/edit`)
         .send({
-          name: seedData[0].name,
+          name: secondGenre.name,
           description: '',
         });
 
@@ -202,15 +218,17 @@ describe('/genres route', () => {
 
   describe('/:id/delete subroute', () => {
     it('deletes selected genre', async () => {
+      const genre = (await Genre.findOne())!;
+
       const response = await supertest(app)
-        .delete('/genres/4/delete');
+        .delete(`/genres/${genre.id}/delete`);
 
       expect(response.status)
         .toBe(200);
     });
 
     it('returns error if genre doesn\'t exist', async () => {
-      const id = 4;
+      const id = -100;
 
       const response = await supertest(app)
         .delete(`/genres/${id}/delete`);

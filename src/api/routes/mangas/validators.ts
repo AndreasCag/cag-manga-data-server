@@ -1,3 +1,4 @@
+import { availableCompleteTypes, isCompleteType } from '@/db/models/Manga';
 import { isNaturalNumber } from '@/utils/globalDataCheckers';
 import { body, param, query } from 'express-validator';
 import moment from 'moment';
@@ -93,3 +94,16 @@ export const sortColumnValidator = query('sortColumn')
   .custom(isListMangaSortColumn)
   .withMessage(`Value should be one of these values: ${availableListMangaSortColumns.join(' ')}`);
 // tslint:enable:no-any no-unsafe-any
+
+export const completeTypeValidator = query('completeType')
+  .optional()
+  .custom(isCompleteType)
+  .withMessage(`Value should be one of these values: ${availableCompleteTypes.join(' ')}`);
+
+const minNameSubstringLength = 3;
+const maxNameSubstringLength = 40;
+
+export const nameValidator = query('name')
+  .optional()
+  .isLength({ min: minNameSubstringLength, max: maxNameSubstringLength })
+  .withMessage(`Value should be between ${minNameSubstringLength} and ${maxNameSubstringLength}`);

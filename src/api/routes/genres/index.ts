@@ -47,7 +47,7 @@ router.get('/list', async (req, res) => {
   });
 
   res.json({
-    genres,
+    genres: genres.map(genre => genre.toStructuredJSON()),
   });
 });
 
@@ -102,12 +102,12 @@ router.post(
       category: ['router', 'createGenre'],
       message: 'Save new genre',
       data: {
-        genre: newGenre.toJSON(),
+        genre: newGenre.toStructuredJSON(),
       },
     });
 
     res.json({
-      genre: newGenre.toJSON(),
+      genre: newGenre.toStructuredJSON(),
     });
   },
 );
@@ -170,7 +170,7 @@ router.get(
     });
 
     res.json({
-      genre,
+      genre: genre.toStructuredJSON(),
     });
   },
 );
@@ -250,12 +250,12 @@ router.put(
       category: ['router', 'editGenre'],
       message: 'Genre successfully updated',
       data: {
-        genre: updatedGenre.toJSON(),
+        genre: updatedGenre.toStructuredJSON(),
       },
     });
 
     res.json({
-      genre: updatedGenre,
+      genre: updatedGenre.toStructuredJSON(),
     });
   },
 );
