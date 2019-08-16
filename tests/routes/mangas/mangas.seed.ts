@@ -24,7 +24,7 @@ export const up = async (sequelize: Sequelize) => {
 };
 
 export const down = async (sequelize: Sequelize) => {
-  const queryInterface = sequelize.getQueryInterface();
+  // const queryInterface = sequelize.getQueryInterface();
 
-  await queryInterface.bulkDelete('Genres', {}, {});
+  // await queryInterface.bulkDelete('Genres', {}, {});
 };

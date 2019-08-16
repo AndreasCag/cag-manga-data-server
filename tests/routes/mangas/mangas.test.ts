@@ -46,12 +46,6 @@ const updatedTestManga = {
   backgroundImage: 'background image 2',
 };
 
-// const updatedTestGenre = {
-//   name: 'New test manga2',
-//   description: 'New test manga description2',
-//   image: 'image_5',
-// };
-
 describe('/mangas route', () => {
 
   describe('/create subroute', () => {
@@ -126,8 +120,19 @@ describe('/mangas route', () => {
 
   describe('/list subroute', () => {
     it('returns list of genres', async () => {
+      const [firstGenre, secondGenre] = await Genre.findAll();
       const response = await supertest(app)
-        .get('/mangas/list?limit=100&offset=0&sortColumn=popularity&sortOrder=descending&name=test%20manga');
+        .get(`/mangas/list?${
+          [
+            'limit=100',
+            'offset=0',
+            'sortColumn=popularity',
+            'sortOrder=descending',
+            'name=test%20manga',
+            `includeGenreIds=${firstGenre.id}`,
+          ]
+            .join('&')
+        }`);
 
       const body = <MangaListResponseBody>response.body;
 

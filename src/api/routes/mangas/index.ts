@@ -6,7 +6,7 @@ import { sequelizeSortOrderMap, SortOrder } from '@/types';
 import logger from '@/utils/logger';
 import { Request, Response, Router } from 'express';
 import { validationResult } from 'express-validator';
-import { Op } from 'sequelize';
+import { Includeable, Op } from 'sequelize';
 import handleErrorInDbRequest from '../../helpers/errorHandlers/handleErrorInDbRequest';
 import handleRecordNotFoundError from '../../helpers/errorHandlers/handleRecordNotFoundError';
 import handleValidationError from '../../helpers/errorHandlers/handleValidationError';
@@ -16,8 +16,10 @@ import {
   completeTypeBodyValidator,
   completeTypeValidator,
   descriptionBodyValidator,
+  excludeGenreIdsQueryValidator,
   genresBodyValidator,
   idParamValidator,
+  includeGenreIdsQueryValidator,
   limitValidator,
   mainImageBodyValidator,
   nameBodyValidator,
@@ -50,6 +52,8 @@ type ListMangaQuery = {
   sortOrder: SortOrder;
   completeType?: CompleteType;
   name?: string;
+  includeGenreIds?: string;
+  excludeGenreIds?: string;
 };
 
 const router = Router();
@@ -66,7 +70,7 @@ type ListWhereCompleteType = {
 
 type ListWhere = undefined | ListWhereName | ListWhereCompleteType | (ListWhereCompleteType & ListWhereName);
 
-const getWhereObject = (query: ListMangaQuery): ListWhere => {
+const getMangaListMangasWhereObject = (query: ListMangaQuery): ListWhere => {
   if (!query.name && !query.completeType) {
     return undefined;
   }
@@ -92,6 +96,29 @@ const getWhereObject = (query: ListMangaQuery): ListWhere => {
   return where;
 };
 
+const getMangaListGenresIncludeableObject = (query: ListMangaQuery): Includeable => {
+  const baseIncludeableObject: Includeable = {
+    model: Genre,
+    as: 'genres',
+  };
+
+  if (!query.includeGenreIds) {
+    return baseIncludeableObject;
+  }
+
+  return {
+    ...baseIncludeableObject,
+    required: true,
+    where: {
+      id: {
+        [Op.in]: query.includeGenreIds
+          .split(',')
+          .map(Number),
+      },
+    },
+  };
+};
+
 router.get(
   '/list',
   [
@@ -101,6 +128,8 @@ router.get(
     sortOrderValidator,
     completeTypeValidator,
     nameValidator,
+    includeGenreIdsQueryValidator,
+    excludeGenreIdsQueryValidator,
   ],
   async (req: Request, res: Response) => {
     logger.debug({
@@ -127,21 +156,15 @@ router.get(
 
     try {
       mangas = await Manga.findAll({
-        include: [{
-          model: Genre,
-          as: 'genres',
-          through: {
-            where: {
-              genreType: 'genre',
-            },
-          },
-        }],
+        include: [
+          getMangaListGenresIncludeableObject(query),
+        ],
         offset: Number(query.offset),
         limit: Number(query.limit),
         order: [
           [query.sortColumn, sequelizeSortOrderMap[query.sortOrder]],
         ],
-        where: getWhereObject(query),
+        where: getMangaListMangasWhereObject(query),
       });
     } catch (err) {
       handleErrorInDbRequest(res, err, 'Cannot retain mangas from db');
@@ -152,6 +175,9 @@ router.get(
     logger.debug({
       category: ['router', 'mangasList'],
       message: 'Send mangas',
+      data: {
+        mangas: mangas.map(manga => manga.toStructuredNestedJSON()),
+      },
     });
 
     res.json({
@@ -256,7 +282,7 @@ router.post(
       category: ['router', 'createManga'],
       message: 'Save new manga',
       data: {
-        manga: newSavedMangaWithGenres.toJSON(),
+        manga: newSavedMangaWithGenres.toStructuredNestedJSON(),
       },
     });
 

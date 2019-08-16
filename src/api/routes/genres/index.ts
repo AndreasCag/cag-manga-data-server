@@ -51,7 +51,6 @@ router.get('/list', async (req, res) => {
   });
 });
 
-// @TODO: create object with nested objects
 router.post(
   '/create',
   [

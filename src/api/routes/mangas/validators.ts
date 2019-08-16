@@ -93,7 +93,6 @@ export const offsetValidator = query('offset')
 export const sortColumnValidator = query('sortColumn')
   .custom(isListMangaSortColumn)
   .withMessage(`Value should be one of these values: ${availableListMangaSortColumns.join(' ')}`);
-// tslint:enable:no-any no-unsafe-any
 
 export const completeTypeValidator = query('completeType')
   .optional()
@@ -107,3 +106,25 @@ export const nameValidator = query('name')
   .optional()
   .isLength({ min: minNameSubstringLength, max: maxNameSubstringLength })
   .withMessage(`Value should be between ${minNameSubstringLength} and ${maxNameSubstringLength}`);
+
+export const includeGenreIdsQueryValidator = query('includeGenreIds')
+  .optional()
+  .custom((value: any) => (
+    typeof value === 'string'
+    && value
+      .split(',')
+      .every(value => isNaturalNumber(Number(value)))
+  ))
+  .withMessage(`Value should be string with genre ids joined by ,`);
+
+export const excludeGenreIdsQueryValidator = query('excludeGenreIds')
+  .optional()
+  .custom((value: any) => (
+    typeof value === 'string'
+    && value
+      .split(',')
+      .every(value => isNaturalNumber(Number(value)))
+  ))
+  .withMessage(`Value should be string with genre ids joined by ,`);
+
+// tslint:enable:no-any no-unsafe-any
